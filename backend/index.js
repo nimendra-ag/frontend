@@ -10,9 +10,10 @@ app.use(express.json());
 
 
 mongoose.connect("mongodb://127.0.0.1:27017/e-commerce");
-// const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken")
 const multer = require("multer");
 const path = require("path");
+const { type } = require("os");
 
 
 //API Creation    
@@ -128,6 +129,60 @@ app.get('/allproducts', async (req, res)=>{
 })
 
 
+//Schema creatig for User model
+const Users = mongoose.model('Users', {
+    name:{
+        type: String,
+    },
+    email:{
+        type:String,
+        unique: true
+    },
+    password:{
+        type: String,
+    },
+    cartData:{
+        type:Object,
+    },
+    date:{
+        type:Date,
+        default: Date.now
+    }
+})
+
+
+//Creating Endpoint for registering the user
+
+app.post('/signup', async (req, res)=>{
+    let check = await Users.findOne({email:req.body.email});
+    if(check){
+        return res.status(400).json({success:false, error:"existing user found with the same email address."})
+    }
+    let cart = {};
+
+    for(let i = 0; i<300; i++){
+        cart[i] = 0;
+    }
+    const user = new Users({
+        name: req.body.username,
+        email: req.body.email,
+        password: req.body.password,
+        cartData: cart,
+    })
+
+    await user.save();
+
+    const data = {
+        user:{
+            id: user.id
+        }
+    }
+
+    const token = jwt.sign(data, 'secret_ecom');
+    res.json({success:true, token:token})
+
+
+})
 app.listen(3001, () => {
     console.log('Server is running on port 3001');
 })
