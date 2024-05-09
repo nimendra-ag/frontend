@@ -180,9 +180,32 @@ app.post('/signup', async (req, res)=>{
 
     const token = jwt.sign(data, 'secret_ecom');
     res.json({success:true, token:token})
-
-
 })
+
+//Creating Endpoint for Login
+
+app.post('/login', async (req, res)=>{
+    let user = await Users.findOne({email: req.body.email});
+    if(user){
+        const passCompare = req.body.password === user.password;
+        if(passCompare){
+            const data = {
+                user:{
+                    id: user.id
+                }
+            }
+            const token = jwt.sign(data, 'secret_ecom');
+            res.json({success:true, token:token});
+        }
+        else{
+            res.json({success:false, error:"Invalid Password"});
+        }
+    }
+    else{
+        res.json({success:false, error:"Wrong Email ID"});
+    }
+})
+
 app.listen(3001, () => {
     console.log('Server is running on port 3001');
 })
