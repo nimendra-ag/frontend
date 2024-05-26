@@ -208,7 +208,7 @@ app.post('/login', async (req, res)=>{
 
 //creating endpoint for new collection data
 app.get('/newcollections', async(req, res)=>{
-    let products = await Product.find({});
+    let products = await Product.find();
     let newcollection = products.slice(1).slice(-8);
     console.log("New Collection Fetched.");
     res.send(newcollection);
@@ -250,6 +250,16 @@ app.post('/addtocart', fetchUser, async(req, res)=>{{
     res.send("Added")
 }})
 
+//creating endpoint to remove product from cartdata
+app.post('/removefromcart', fetchUser, async (req, res)=>{
+    let userData = await Users.findOne({_id:req.user.id});
+    if(userData.cartData[req.body.itemId]>0){
+        userData.cartData[req.body.itemId] -= 1;
+        await Users.findOneAndUpdate({_id:req.user.id}, {cartData:userData.cartData});
+        res.send("Removed")
+    }
+    
+})
 
 app.listen(3001, () => {
     console.log('Server is running on port 3001');
